@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import matplotlib.animation as animation 
 
 fig = plt.figure()
-ax = plt.axes(xlim = (0, 2*np.pi), ylim =(-1.2, 1.2))
+ax = plt.axes(xlim = (0, 2*np.pi), ylim =(-10, 10))
 line, = ax.plot([], [], lw=2)
 
 def init():
@@ -38,17 +38,20 @@ def PIR_Func(n, theta):
     psi_n = (1/np.sqrt(2*np.pi))*np.exp(ci*n*theta)
     return psi_n
 
-def animate(i):
-    line.set_ydata( PIR_Func(m,o)*PIR_Time(m, I, i/10))
-    line.set_xdata(o)
-    
-    return line, 
+
+
 
 print (PIR_Func(1,1))
 
 theta = np.linspace(0, 2*np.pi, 500)
 psi = PIR_Func(5, theta)
 
+def gauss_packet(x_array, x0, sig, k0):
+    ci = 0+1j
+    G = np.exp(-0.5 * ((x_array - x0)/sig)**2)
+    Norm = 1./(sig * np.sqrt(2*np.pi))
+    P = np.exp(ci * k0 * x_array)
+    return Norm * G * P
 
 def Triangle_Wave(theta):
     tw = np.zeros(len(theta))
@@ -77,24 +80,35 @@ def fourier_analysis(tw, m, o):
     for i in range(0, len(tw)):
         rsum = rsum + integrand[i] * w
         
-        return rsum
+    return rsum
 
         
 
 #anim = animation.FuncAnimation(fig, animate, init_func=init,
   #                             frames=10000, interval=20, blit=True)
  
-  
+trianglewave = gauss_packet(o, np.pi/4, 0.1, 0.1) 
+plt.plot(o, trianglewave)
+plt.show()
 marray = np.linspace(-100,100,201)
 c_array = np.zeros(len(marray), dtype=complex)
-psi_exp = np.zeros(len(trianglewave), dtype=complex)
+
   
 for i in range(0, len(marray)):
       c_array[i] = fourier_analysis(trianglewave, marray[i], o)
-      psi_exp = psi_exp + c_array[i]*PIR_Func(marray[i],o)
-      
+     
+
+def animate(i):
+    ##print(c_array)
+    psi_exp = np.zeros(len(trianglewave), dtype= complex)
+    for j in range (0, len(marray)):
+        psi_exp = psi_exp + c_array[j]*PIR_Func(marray[j], o)*PIR_Time(marray[j], I, i/100)
+    line.set_ydata( psi_exp )
+    line.set_xdata(o)
+    return line, 
+anim = animation.FuncAnimation(fig, animate, init_func=init, frames=10000, interval=20, blit=True)
 
 psi_1_times_tw = trianglewave * PIR_Func(1, o)
 
-plt.plot(o, trianglewave, o, psi_exp)
+#plt.plot(o, trianglewave, o, psi_exp)
 plt.show()
