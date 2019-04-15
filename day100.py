@@ -7,6 +7,8 @@ Created on Mon Apr  1 14:35:53 2019
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation 
+from numpy.random import choice
+
 
 fig = plt.figure()
 ax = plt.axes(xlim = (0, 2*np.pi), ylim =(-10, 10))
@@ -84,25 +86,41 @@ def fourier_analysis(tw, m, o):
 
         
 
-#anim = animation.FuncAnimation(fig, animate, init_func=init,
-  #                             frames=10000, interval=20, blit=True)
+
+
  
 trianglewave = gauss_packet(o, np.pi/4, 0.1, 0.1) 
-plt.plot(o, trianglewave)
-plt.show()
 marray = np.linspace(-100,100,201)
 c_array = np.zeros(len(marray), dtype=complex)
 
   
 for i in range(0, len(marray)):
       c_array[i] = fourier_analysis(trianglewave, marray[i], o)
-     
+print (np.conj(c_array[100])*(c_array[100]))
+
+p_of_en = np.real(np.conj(c_array)*c_array)
+norm = np.sum(p_of_en)
+p_of_en = p_of_en / norm
+
+##draw = choice(marray, 1, p=p_of_en)
+##print("drew this number", draw)
+##print("collapsed to random eigenfunction with m = ", marray[int(draw[0])])
 
 def animate(i):
     ##print(c_array)
     psi_exp = np.zeros(len(trianglewave), dtype= complex)
-    for j in range (0, len(marray)):
-        psi_exp = psi_exp + c_array[j]*PIR_Func(marray[j], o)*PIR_Time(marray[j], I, i/100)
+    if i<2500:
+        for j in range(0, len(marray)):
+            psi_exp = psi_exp + c_array[j]*PIR_Func(marray[j], o)*PIR_Time(marray[j], I, i/10000)
+    elif i == 2500:
+        draw = choice(marray, 1, p=p_of_en)
+        sate = int(draw[0])
+        psi_exp = PIR_Func( state, o)*PIR_Time(state, I, i/10000)
+    else:
+        PIR_Func( state, o)*PIR_Time(state, I, i/10000)
+        
+        
+        
     line.set_ydata( psi_exp )
     line.set_xdata(o)
     return line, 
